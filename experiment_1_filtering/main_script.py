@@ -3,13 +3,12 @@
 from datasets import load_dataset, DatasetDict, Dataset
 from transformers import (
     AutoTokenizer, AutoModelForSequenceClassification,      # Model stuff
-    Trainer, TrainingArguments, DataCollatorWithPadding     # Trainer stuff
+    Trainer, TrainingArguments                              # Trainer stuff
 )
 import evaluate
 
 # Other stuff:
 import argparse
-import os
 import numpy as np
 import wandb
 
@@ -23,8 +22,11 @@ def filter_dataset(dataset: DatasetDict, args: argparse.Namespace):
     
     if args.filter_cols is None and args.filter_thv is None:
         print("No filters specified. Using full dataset!")
-        return dataset
+        return dataset, dict()
     
+    # Dict specifying thresholds (values) for columns (keys)
+    thv_dict = dict()
+
     # Get the entries from the command line input:
     filter_cols = args.filter_cols.split(",")
     filter_thv = [float(val) for val in args.filter_thv.split(",")]
@@ -35,6 +37,7 @@ def filter_dataset(dataset: DatasetDict, args: argparse.Namespace):
     
     # Filter out based on the thresholds
     for col, thv in zip(filter_cols, filter_thv):
+        thv_dict[col] = thv
         dataset = dataset.filter(lambda x: float(x[col]) > thv)
     
     # Showing length to user :-D
@@ -42,7 +45,7 @@ def filter_dataset(dataset: DatasetDict, args: argparse.Namespace):
     print(f"Finished filtering. New size of training set is {new_len} "
           f"({100 * new_len / original_len:.2f}%) of original size.")
 
-    return dataset
+    return dataset, thv_dict
 
 def preprocess_dataset(dataset: DatasetDict,
                        args: argparse.Namespace,
@@ -136,14 +139,20 @@ def main(args: argparse.Namespace):
     # Prepare training set:
     print("Getting the training set.")
     training_set = load_dataset("GroNLP/ik-nlp-22_transqe")
-    training_set = filter_dataset(training_set, args)
+    training_set, thv_dict = filter_dataset(training_set, args)
     training_set = preprocess_dataset(training_set, args, True)
 
     # Optionally setting up wandb logging:
     if args.wandb_log:
-        wandb.init(
-            project=args.experiment,
-            name=f"todo") # TODO add config to name
+        
+        # Creating name of run:
+        mn = args.model.replace("/", "_")
+        trc = args.train_inp_cols
+        tec = args.test_inp_cols
+        thvs = "_".join([f"{key}={val}" for key, val in thv_dict.items()])
+        run_name = f"{mn}_TRC={trc}_TEC={tec}_{thvs}"
+
+        wandb.init(project=args.experiment, name=run_name)
 
     # Train the model:
     model, trainer = train_model(training_set, args)
@@ -161,7 +170,18 @@ def main(args: argparse.Namespace):
     model.eval()
     test_results = trainer.predict(testing_set).metrics
     print(test_results)
-    wandb.log({"test/test_accuracy": test_results["test_accuracy"]})
+    if args.wandb_log:
+        wandb.log({"test/test_accuracy": test_results["test_accuracy"]})
+        wandb.config.update(thv_dict) # Bit ugly to do here, but fuck it..
+
+    with open("test_results.txt", "a") as out_file:
+        out_file.write(
+            f"{test_results['test_accuracy']},{args.model},"
+            f"{args.train_inp_cols.replace(',', '&')},"
+            f"{args.test_inp_cols.replace(',', '&')},"
+            f"\"{' '.join([f'{key}={val}' for key, val in thv_dict.items()])}\""
+            "\n"
+        )
 
     wandb.finish() # We might run this in a notebook later on so to be sure ^^
 
