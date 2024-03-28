@@ -11,6 +11,7 @@ import evaluate
 import argparse
 import numpy as np
 import wandb
+import time
 
 
 
@@ -89,12 +90,13 @@ def train_model(dataset: DatasetDict, args: argparse.Namespace):
     #   · Using the mostly 🤗 default parameters, as these are very similar to
     #     the ones recommended in the original BERT paper (arxiv 1810.04805).
     train_args = TrainingArguments(
-        output_dir=args.experiment,
+        output_dir=args.experiment + time.strftime("_%Y%m%d_%H%M%S"),
         evaluation_strategy="steps",
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
         eval_steps=500,
         load_best_model_at_end=True,
+        metric_for_best_model="eval_accuracy",
         max_steps=17_000    # Approx 1 hour on my laptop ^^
     )
 
@@ -162,9 +164,14 @@ def main(args: argparse.Namespace):
     testing_set = load_dataset("maximedb/sick_nl", split="train+test+validation")
     testing_set = preprocess_dataset(testing_set, args, False)
 
-    # Freaking idiots did the labels the other way around:
-    label_remap = {0: 2, 1: 1, 2: 0}
-    testing_set = testing_set.map(lambda x: {"label": label_remap[x["label"]]})
+    # Using entailment_AB as labels. This means A is premise, B is hypothesis:
+    label_remap = {
+        "A_entails_B": 0,
+        "A_neutral_B": 1,
+        "A_contradicts_B": 2
+    }
+    testing_set = testing_set.map(
+        lambda x: {"label": label_remap[x["entailment_AB"]]})
 
     # Test the model:
     model.eval()
