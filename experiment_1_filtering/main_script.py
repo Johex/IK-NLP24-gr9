@@ -133,8 +133,6 @@ def train_model(dataset: DatasetDict, args: argparse.Namespace):
 
     trainer.train()
 
-    trainer.save_model(out_dir = "/best/")
-
     return model, trainer
 
 def main(args: argparse.Namespace):
