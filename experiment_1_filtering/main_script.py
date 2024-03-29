@@ -3,7 +3,7 @@
 from datasets import load_dataset, DatasetDict, Dataset
 from transformers import (
     AutoTokenizer, AutoModelForSequenceClassification,      # Model stuff
-    Trainer, TrainingArguments                              # Trainer stuff
+    Trainer, TrainingArguments, EarlyStoppingCallback       # Trainer stuff
 )
 import evaluate
 
@@ -89,12 +89,16 @@ def train_model(dataset: DatasetDict, args: argparse.Namespace):
     #   · Setting it up such that it runs approximately 1h on my RTX 3060 Max-Q
     #   · Using the mostly 🤗 default parameters, as these are very similar to
     #     the ones recommended in the original BERT paper (arxiv 1810.04805).
+
+    out_dir = args.experiment + time.strftime("_%Y%m%d_%H%M%S")
+
     train_args = TrainingArguments(
-        output_dir=args.experiment + time.strftime("_%Y%m%d_%H%M%S"),
+        output_dir=out_dir,
         evaluation_strategy="steps",
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
         eval_steps=500,
+        save_total_limit=2,
         load_best_model_at_end=True,
         metric_for_best_model="eval_accuracy",
         max_steps=17_000    # Approx 1 hour on my laptop ^^
@@ -114,7 +118,8 @@ def train_model(dataset: DatasetDict, args: argparse.Namespace):
         tokenizer=AutoTokenizer.from_pretrained(args.model), # for padding
         train_dataset=train_ds,
         eval_dataset=eval_ds,
-        compute_metrics=compute_metrics
+        compute_metrics=compute_metrics,
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=5)]
     )
 
     if args.wandb_log:
@@ -127,6 +132,8 @@ def train_model(dataset: DatasetDict, args: argparse.Namespace):
         }) # TODO: add more, especially filter parameters
 
     trainer.train()
+
+    trainer.save_model(out_dir = "/best/")
 
     return model, trainer
 
