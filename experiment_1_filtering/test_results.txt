@@ -4,3 +4,7 @@
 0.5809959349593496,google-bert/bert-base-cased,premise_en&hypothesis_en,sentence_A_original&sentence_B_original,"mqm_premise=0.107 mqm_hypothesis=0.107"
 0.5426829268292683,GroNLP/bert-base-dutch-cased,premise_nl&hypothesis_nl,sentence_A&sentence_B,"mqm_premise=0.1183 mqm_hypothesis=0.1183"
 0.5211382113821138,google-bert/bert-base-cased,premise_en&hypothesis_en,sentence_A_original&sentence_B_original,"mqm_premise=0.1183 mqm_hypothesis=0.1183"
+0.5326219512195122,GroNLP/bert-base-dutch-cased,premise_nl&hypothesis_nl,sentence_A&sentence_B,"da_premise=0.2624 da_hypothesis=0.2624"
+0.5848577235772358,google-bert/bert-base-cased,premise_en&hypothesis_en,sentence_A_original&sentence_B_original,"da_premise=0.2624 da_hypothesis=0.2624"
+0.5075203252032521,GroNLP/bert-base-dutch-cased,premise_nl&hypothesis_nl,sentence_A&sentence_B,"da_premise=0.4861 da_hypothesis=0.4861"
+0.5140243902439025,google-bert/bert-base-cased,premise_en&hypothesis_en,sentence_A_original&sentence_B_original,"da_premise=0.4861 da_hypothesis=0.4861"
