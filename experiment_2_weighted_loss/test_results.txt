@@ -1,0 +1,4 @@
+0.551219512195122,GroNLP/bert-base-dutch-cased,premise_nl&hypothesis_nl,sentence_A&sentence_B,""
+0.5566056910569106,GroNLP/bert-base-dutch-cased,premise_nl&hypothesis_nl,sentence_A&sentence_B,""
+0.5821138211382114,google-bert/bert-base-cased,premise_en&hypothesis_en,sentence_A_original&sentence_B_original,""
+0.5895325203252032,google-bert/bert-base-cased,premise_en&hypothesis_en,sentence_A_original&sentence_B_original,""
