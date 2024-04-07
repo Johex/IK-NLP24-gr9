@@ -106,6 +106,8 @@ def train_model(dataset: DatasetDict, args: argparse.Namespace):
 
     if args.wandb_log:
         train_args.report_to = ["wandb"]
+    else:
+        train_args.report_to = []
 
     train_ds = dataset["train"]
     eval_ds = dataset["validation"]
