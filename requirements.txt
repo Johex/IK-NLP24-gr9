@@ -55,6 +55,7 @@ jupyterlab_server==2.25.4
 jupyterlab_widgets==3.0.10
 MarkupSafe==2.1.5
 matplotlib-inline==0.1.6
+matplotlib
 mistune==3.0.2
 multidict==6.0.5
 multiprocess==0.70.16
