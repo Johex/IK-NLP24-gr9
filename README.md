@@ -209,4 +209,4 @@ We uploaded the <a id="about" href="https://drive.google.com/drive/folders/13c3w
 | best_models/test_model.ipynb                            | Notebook for testing the results of the best models trained           |
 
 
-
+Kindly use experiment_1_filtering/batch_main_script_notebook.ipynb for the batch experiments to test Quality Estimation at different thresholds.
